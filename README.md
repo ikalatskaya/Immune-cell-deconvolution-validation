@@ -8,7 +8,7 @@ The main focus of this study is a comprehensive comparison between immune cell d
 
 ## Data
 Gene expression and flow cytometry data from the publicly available rheumatoid arthritis GSE93777 dataset were used for validation of CIBERSORT and xCell immune cell deconvolution methods. All GSE93777 samples were used in the validation (rheumatoid arthritis patients with or without drug treatment and healthy volunteers). Treated rheumatoid arthritis patients received either methotrexate, infliximab, or tocilizumab in roughly equal parts.
-CIBERSORT and xCell deconvolution cell signatures were matched to corresponding/related immune cell subtypes assessed by flow cytometry. 
+CIBERSORT and xCell deconvolution cell signatures were matched to corresponding/related immune cell subtypes assessed by flow cytometry. Flow cytometry cell types were manually matched to the available immune cell deconvolution signatures. 
 
 ## Methods
 ### CIBBERSORT
