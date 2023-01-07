@@ -11,7 +11,7 @@ Gene expression and flow cytometry data from the publicly available rheumatoid a
 CIBERSORT and xCell deconvolution cell signatures were matched to corresponding/related immune cell subtypes assessed by flow cytometry. Flow cytometry cell types were manually matched to the available immune cell deconvolution signatures. 
 
 ## Methods
-### CIBBERSORT
+### CIBERSORT
 https://cibersort.stanford.edu/
 CIBERSORT deconvolution algorithm provides quantification for 22 immune cell subtypes. It is a widely used tool that requires an input matrix of reference gene expression signatures, collectively used to estimate the relative proportions of each cell type of interest. To deconvolve the mixture, a linear support vector regression (SVR), machine-learning approach is utilized and the resulting immune cell abundance estimates the fraction of immune cell types in a sample. The term fraction is defined for each sample as the sum of values across the 22 cell types with a total of 1, and should reflect the true fraction of cells in the sample of a given type. In this analysis, the CIBERSORT deconvolution method was performed on all 22 immune cell subtypes.
 
@@ -20,10 +20,9 @@ It is a gene signatures-based method that is established on single sample gene s
 
 
 ## Output
-We designed an interactive web-based framework using Rshiny technology providing full access to all anonymized data and visualization material for the deconvolution cell signature and flow cytometry validation described in this article, available here: 
-We have designed the Rshiny app for a comprehensive validation of two most popular deconvolution methods xCell and CIBERSORT on publicly available data.
+We have designed an interactive web-based portal using Rshiny technology for a comprehensive validation of two most popular immune cell deconvolution methods xCell and CIBERSORT on publicly available data.
 The app could be found here: 
-https://minijen.shinyapps.io/Immune_Cell_Deconvolution_Validation/
+https://emdserono1.shinyapps.io/Immune_Cell_Deconvolution_Validation/
 
 ## References:
 1. https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE93777
