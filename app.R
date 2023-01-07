@@ -42,41 +42,43 @@ metadata.slim = metadata.slim %>% dplyr::filter(sample_id %in% unique(gse93777.d
 mycolours = c(infliximab = "#999999", methothrexene = "#E69F00", tocilizumab="#56B4E9", healthy= "#009E73", naive = "#D55E00")
 
 #############################################
-### HEADER #################################
-#############################################
-
-header <- dashboardHeader(
-  title = "Immune Cell Deconvolution Validation", 
-  titleWidth = 320
-)
-
-
-#############################################
 ### SIDEBAR #################################
 #############################################
 
-sidebar <- dashboardSidebar(
-    width = 320, 
-          sidebarMenu(id = "sidebar",
-          menuItem("Introduction", tabName = "Intro", icon = icon("file-contract")),
-          menuItem("Cibersort vs Flow", tabName = "CIBERSORT", icon = icon("cuttlefish")),
-          menuItem("CIBERSORT Summary table", tabName = "CIBERsummary", icon = icon("table")),
-          menuItem("xCell vs Flow", tabName = "xcell", icon = icon("xing")),
-          menuItem("xCell Summary table", tabName = "XCELLsummary", icon = icon("table")),
-          menuItem("FAQs", tabName = "Help", icon = icon("question")),
-          menuItem("Contact Us", tabName = "contact", icon = icon("envelope"))
-))
+#header <- dashboardHeader(title = tagList(tags$span(class = "logo-mini", "Cell"),
+#  tags$span(class = "logo-lg", "Immune Cell Deconvolution")), titleWidth = 280)
 
+header <- dashboardHeader(title = "Immune Cell Deconvolution Validation", titleWidth = 320)
 
-##########################################
-### BODY #################################
-##########################################
+sidebar <- dashboardSidebar(width = 320, 
+                            sidebarMenu(id = "sidebar",
+                                        menuItem("Introduction", tabName = "Intro", icon = icon("file-contract")),
+                                        menuItem("Cibersort vs Flow", tabName = "CIBERSORT", icon = icon("cuttlefish")),
+                                        menuItem("CIBERSORT Summary table", tabName = "CIBERsummary", icon = icon("table")),
+                                        menuItem("xCell vs Flow", tabName = "xcell", icon = icon("xing")),
+                                        menuItem("xCell Summary table", tabName = "XCELLsummary", icon = icon("table")),
+                                        menuItem("Download page", tabName = "download", icon = icon("table")),
+                                        menuItem("FAQs", tabName = "Help", icon = icon("question")),
+                                        menuItem("Contact Us", tabName = "contact", icon = icon("envelope"))
+                            ))
+
 
 body <- dashboardBody (
   useShinyjs(), # Set up shinyjs
+  ### useShinyalert(), # set up shinyalert
+  ## Adding in some dashboard features
+  #tags$head(tags$style(HTML('.content-wrapper { background-color: #fff;} '))),
+  #tags$head(tags$style(HTML('.main-header .sidebar-toggle:before {content: "\\f0a8";}'))),
+  ### Setting a semi-collapsible sidebar
+  #tags$script(HTML("$('body').addClass('sidebar-mini');")),
+  ### get header frozen
+  ### https://stackoverflow.com/questions/45706670/shiny-dashboadpage-lock-dashboardheader-on-top
+  #tags$script(HTML("$('body').addClass('fixed');")),
+  #tags$head(includeCSS('style.css')),
+  
+  # too old - soon has to be replaced with bslib
   shinyDashboardThemes(theme = "blue_gradient"),
   setSliderColor(color = c('#EE9B00', '#EE9B00'), sliderId = c(1,2)),
-  
   tabItems ( 
     tabItem("Intro", 
             fluidPage(  
@@ -109,13 +111,9 @@ body <- dashboardBody (
               collectively used to estimate the relative proportions of each cell type of interest. 
               To deconvolve the mixture, a linear support vector regression (SVR), machine learning approach is utilized.",
               br()
-              ) # fluid
-            
-    ), # tabItem
-    
-
-
-    ### CIBERSORT SCATTER PLOT TAB #################################
+              
+            )
+    ),
     
     tabItem("CIBERSORT",
             fluidPage(
@@ -127,6 +125,7 @@ body <- dashboardBody (
                        selectInput(inputId = "flowtype", "Choose corresponding Flow Cytometry data", multiple = FALSE, choices = all_of(flow.types), selected = "B.CELL.rWBC"),
                        br(),
                        actionButton(inputId = "go", "Plot data", icon("paper-plane"), style="color: #fff; background-color: #29869d; border-color: black")
+                       #actionButton(inputId = "go", "Plot data", icon("paper-plane"), style="color: #fff; background-color: blue; border-color: black")
                 ),
                 column(4, offset = 0, 
                        awesomeRadio("colorByTreatmentButton", inline = FALSE, label = "Color data points by treatment", choices = c("None", "Color")),
@@ -135,34 +134,29 @@ body <- dashboardBody (
                 ),
                 column(4, offset = 0, 
                        awesomeCheckboxGroup("datadis", label = "Choose data to display", choices = c("healthy", "naive", "infliximab", "tocilizumab", "methothrexene"), selected = c("healthy", "naive", "infliximab", "tocilizumab", "methothrexene"))
-                )
-              ),
+                )),
               
               fluidPage(
-                fluidRow(
-                    column(12, offset = 0, 
+                column(6, offset = 0, 
                        br(),
-                       box(plotOutput("ggscatterCiber") %>% withSpinner(type = 4), status = "primary", collapsible = TRUE, collapsed = FALSE,  solidHeader = TRUE, title="Scatter plot and Linear Regression", footer = "FIGURE 1: Scatter plot displaying relationship between selected CIBERSORT signature and corresponding flow data. The solid green line indicates linear fit with its 95% confidence interval (gray area). R indicates either Pearson’s or Spearman's correlation coefficient (depending on user's choice). "),
-                       box(plotOutput("errorBar") %>% withSpinner(type = 4), footer = "FIGURE 2: Pearson correlation coefficient with 95%CI were calculated and ploted between selected CIBERSORT signature and all avaiable flow data. Error bar of interest is shown in dark green. Shaded area depicts weak correlation range from -0.25 to 0.25.", collapsible = TRUE, collapsed = FALSE, status = "primary", solidHeader=TRUE, width = 6, title="Error barplot")
-                       
-                    ),
-                    column(12, offset=0, 
+                       box(
+                         plotOutput("ggscatterCiber") %>% withSpinner(type = 4), status = "primary", collapsible = TRUE, collapsed = FALSE,  solidHeader = TRUE, width = "50%", title="Scatter plot and Linear Regression", footer = "FIGURE 1: Scatter plot displaying relationship between selected CIBERSORT signature and corresponding flow data. The solid green line indicates linear fit with its 95% confidence interval (gray area). R indicates either Pearson’s or Spearman's correlation coefficient (depending on user's choice). "
+                       ),
+                       box(
+                         DTOutput("tblCibersort") %>% withSpinner(type = 4), status = "primary", collapsible = TRUE, collapsed = FALSE, solidHeader = TRUE, width = "50%", title="Raw data table with clinical attributes"
+                         )
+                ),
+                column(6, offset=0, 
                        br(),
-                       box(DTOutput("tblCibersort") %>% withSpinner(type = 4), status = "primary", collapsible = TRUE, collapsed = FALSE, solidHeader = TRUE, title="Raw data table with clinical attributes"),
-                       box(plotOutput("corrPlotCibersort") %>% withSpinner(type = 4), status = "primary", collapsible = TRUE, collapsed = FALSE, solidHeader=TRUE, width = 6, title="Corrplot", footer = "FIGURE 3. Corrplot depicting correlation between selected signature and all available flow data. The colored areas of the circle show the value of corresponding Pearson's or Spearman's correlation coefficients. Positive correlations are displayed in blue and negative correlations in red. Nonsignificant correlations (pvalue > 0.01) are blank.")
-                    ),
-                    br()
-                )
-                )
+                       box(plotOutput("errorBar") %>% withSpinner(type = 4), footer = "FIGURE 2: Pearson correlation coefficient with 95%CI were calculated and ploted between selected CIBERSORT signature and all avaiable flow data. Error bar of interest is shown in dark green. Shaded area depicts weak correlation range from -0.25 to 0.25.", collapsible = TRUE, collapsed = FALSE, status = "primary", solidHeader=TRUE, width = "50%", title="Error barplot"),
+                       box(plotOutput("corrPlotCibersort") %>% withSpinner(type = 4), status = "primary", collapsible = TRUE, collapsed = FALSE, solidHeader=TRUE, width = "50%", title="Corrplot", footer = "FIGURE 3. Corrplot depicting correlation between selected signature and all available flow data. The colored areas of the circle show the value of corresponding Pearson's or Spearman's correlation coefficients. Positive correlations are displayed in blue and negative correlations in red. Nonsignificant correlations (pvalue > 0.01) are blank.")
+                ),
+                br()
               ),
               br()
-    ), # tabItem
+            ) # end of fluidPage
+    ), # end of tabItem
     
-
-
-
-
-    ### CIBERSORT SUMMARY PAGE ################################
     tabItem("CIBERsummary", 
             fluidPage(
               h3("Summary (CIBERSORT validation)"),
@@ -175,20 +169,18 @@ body <- dashboardBody (
                      awesomeCheckboxGroup("treatmentArmSelector", label = "Choose patient cohorts to include", choices = c("healthy", "naive", "infliximab", "tocilizumab", "methothrexene"), selected = c("healthy", "naive", "infliximab", "tocilizumab", "methothrexene"))
               ),
               column(6, offset=0,
-                     box(tableOutput("assessmentCiber"), width = 6),
+                     box(tableOutput("assessmentCiber"), width = "50%"),
                      br()
               )),
             fluidPage(
-              box(DTOutput("summaryTableCibersort") %>% withSpinner(type = 4), collapsible = TRUE, collapsed = FALSE, solidHeader = TRUE, width = 12)
+              box(DTOutput("summaryTableCibersort") %>% withSpinner(type = 4), collapsible = TRUE, collapsed = FALSE, solidHeader = TRUE, width = "100%")
             )
     ),
     
-    ### xCell tab with scatter plotting #################################
     tabItem("xcell",
             fluidPage(
               h3("Comparing xCell signatures with flow cytometry data"),
               br(),
-              fluidRow(
               fluidPage(
                 column(4, offset = 0, 
                        pickerInput(inputId = "xcelltype", "Choose xCell signature", choices = xcell.types, multiple = FALSE, selected = "xcell.B.cells", choicesOpt = list(disabled = xcell.types %in% na.xcell)),
@@ -204,32 +196,24 @@ body <- dashboardBody (
                 column(4, offset = 0, 
                        awesomeCheckboxGroup("treatmentSelector2", label = "Choose data to display", choices = c("healthy", "naive", "infliximab", "tocilizumab", "methothrexene"),
                                             selected = c("healthy", "naive", "infliximab", "tocilizumab", "methothrexene"))
-                  )
                 )
-              ),
+              )
+            ), # fluidPage end
             
-           fluidPage(
-             br(),
-            fluidRow(
-              column(12, offset = 0, 
+            fluidPage(
+              column(6, offset = 0, 
                      br(),
-                     box(plotOutput("ggscatterXCELL") %>% withSpinner(type=4), status = "primary", collapsible = TRUE, collapsed = FALSE, solidHeader = TRUE, title="Scatter plot and Linear Regression", footer = "FIGURE 1: Scatter plot displaying relationship between selected xCell signature and corresponding flow data. The solid green line indicates linear fit with its 95% confidence interval (gray area). R indicates either Pearson’s or Spearman's correlation coefficient (depending on user's choice). "),
-                     box(plotOutput("errorBarXCELL") %>% withSpinner(type=4), status = "primary", footer = "FIGURE 2: Pearson correlation coefficient with 95%CI were calculated and ploted between selected xCell signature and all avaiable flow data. Error bar of interest is shown in dark green. Shaded area depicts weak correlation range from -0.25 to 0.25.", collapsible = TRUE, collapsed = FALSE, solidHeader=TRUE, width = 6, title="Error barplot")
-                    )),
-            fluidRow(
-              column(12, offset = 0,
+                     box(plotOutput("ggscatterXCELL") %>% withSpinner(type=4), status = "primary", collapsible = TRUE, collapsed = FALSE, solidHeader = TRUE, width = "50%", title="Scatter plot and Linear Regression", footer = "FIGURE 1: Scatter plot displaying relationship between selected xCell signature and corresponding flow data. The solid green line indicates linear fit with its 95% confidence interval (gray area). R indicates either Pearson’s or Spearman's correlation coefficient (depending on user's choice). "),
+                     box(DTOutput("tblxCell") %>% withSpinner(type=4), status = "primary", collapsible = TRUE, collapsed = FALSE, solidHeader = TRUE, width = "50%", title="Raw data table with clinical attributes")
+              ),
+              column(6, offset = 0,
                      br(),
-                     box(DTOutput("tblxCell") %>% withSpinner(type=4), status = "primary", collapsible = TRUE, collapsed = FALSE, solidHeader = TRUE, title="Raw data table with clinical attributes"),
-                     box(plotOutput("corrPlotxCell") %>% withSpinner(type=4), status = "primary", collapsible = TRUE, collapsed = FALSE, solidHeader=TRUE, width = 6, title="Corrplot", footer = "FIGURE 3. Corrplot depicting correlation between selected xCell signature and all available flow data. The colored areas of the circle show the value of corresponding Pearson's or Spearman's correlation coefficients. Positive correlations are displayed in blue and negative correlations in red. Nonsignificant correlations (pvalue > 0.01) are blank.")
-              ))
+                     box(plotOutput("errorBarXCELL") %>% withSpinner(type=4), status = "primary", footer = "FIGURE 2: Pearson correlation coefficient with 95%CI were calculated and ploted between selected xCell signature and all avaiable flow data. Error bar of interest is shown in dark green. Shaded area depicts weak correlation range from -0.25 to 0.25.", collapsible = TRUE, collapsed = FALSE, solidHeader=TRUE, width = "50%", title="Error barplot"),
+                     box(plotOutput("corrPlotxCell") %>% withSpinner(type=4), status = "primary", collapsible = TRUE, collapsed = FALSE, solidHeader=TRUE, width = "50%", title="Corrplot", footer = "FIGURE 3. Corrplot depicting correlation between selected xCell signature and all available flow data. The colored areas of the circle show the value of corresponding Pearson's or Spearman's correlation coefficients. Positive correlations are displayed in blue and negative correlations in red. Nonsignificant correlations (pvalue > 0.01) are blank.")
+              )
             )
-        )
     ), # tabItem end
     
-    
-
-
-    ### xCell summary TAB ################################
     tabItem("XCELLsummary", 
             fluidPage(
               h3("Summary (xCell validation)"),
@@ -242,17 +226,38 @@ body <- dashboardBody (
                      awesomeCheckboxGroup("treatmentArmSelector4xCell", label = "Choose patient cohorts to include", choices = c("healthy", "naive", "infliximab", "tocilizumab", "methothrexene"), selected = c("healthy", "naive", "infliximab", "tocilizumab", "methothrexene"))
               ),
               column(6, offset=0,
-                     box(tableOutput("assessmentxCell"), width = 6),
+                     box(tableOutput("assessmentxCell"), width = "50%"),
                      br()
               )),
             fluidPage(
-              box(DTOutput("summaryTablexCell") %>% withSpinner(type = 4), collapsible = TRUE, collapsed = FALSE, solidHeader = TRUE, width = 12)
+              box(DTOutput("summaryTablexCell") %>% withSpinner(type = 4), collapsible = TRUE, collapsed = FALSE, solidHeader = TRUE, width = "100%")
             )
     ),
-
-
-
-    ### HELP TAB #################################
+    
+    tabItem("download", 
+            fluidPage(
+              h3("Download page"),
+              h4("This tab gives an opportunity either to search for a specific deconvolution value or download the whole dataset. Please, select 'show ALL values' and press 'copy' button." ),
+              
+              shiny::tabsetPanel(type = "tabs",
+                                 
+                                 tabPanel("CIBERSORT data",
+                                          column(12, offset = 0,
+                                                 br(),
+                                                 box(DTOutput("downloadCibersort") %>% withSpinner(type = 4), collapsible = TRUE, collapsed = FALSE, solidHeader = TRUE, width = "100%")
+                                          )
+                                 ),
+                                 tabPanel("xCell data",
+                                          column(12, offset = 0,
+                                                 br(),
+                                                 box(DTOutput("downloadXcell") %>% withSpinner(type = 4), collapsible = TRUE, collapsed = FALSE, solidHeader = TRUE, width = "100%")
+                                          )
+                                 )
+              )
+            )
+    ),
+    
+    
     tabItem("Help", 
             fluidPage(  
               h2("Frequently Asked Questions (FAQs)"),
@@ -279,12 +284,8 @@ body <- dashboardBody (
               "xCell and CIBERSORT are two well-described and broadly used methods that can be used for immune cell subtype assessment. 
               Other methods include (but are not restricted to) Digital Sorting Algorithm (DSA) (Zhong et al., BMC Bioinformatics 2013); DeconRNASeq (Gong et al., Bioinformatics 2013); quantiseqr R package; CellMix (Gaujoux et al., Bioinformatics 2013). "
             )
-      ), # end of tab
+    ), # end of tab
     
-
-
-
-    ### Contact information TAB #################################
     tabItem("contact", 
             fluidPage(
               h3("Developers"),
@@ -298,11 +299,11 @@ body <- dashboardBody (
               "EMD Serono, Inc. | 45C Middlesex Turnpike | Billerica, MA 01821 | USA", br(),
               "irina.kalatskaya@emdserono.com", 
               br()
-              )
-             
-      ) # end of tab
-  ) # end of tabs
-) # end of body
+            )
+            
+    ) # end of tab
+  )
+)
 
 
 
@@ -572,9 +573,9 @@ server <- function(input, output, session) {
   
   output$summaryTableCibersort <- DT::renderDataTable({
     cibersorttable() 
-    }, 
-    extensions = c('Buttons', 'Responsive'), rownames = FALSE, options = list(pageLength = 22, dom='Bflrtip', buttons=c('colvis', 'copy')
-    )
+  }, 
+  extensions = c('Buttons', 'Responsive'), rownames = FALSE, options = list(pageLength = 22, dom='Bflrtip', buttons=c('colvis', 'copy')
+  )
   )
   
   output$assessmentCiber <- renderTable({
@@ -637,14 +638,40 @@ server <- function(input, output, session) {
   
   output$summaryTablexCell <- DT::renderDataTable({
     xCelltable() %>% dplyr::arrange("Signature name")
-    }, 
-    extensions = c('Buttons', 'Responsive'), rownames = FALSE, options = list(pageLength = 50, dom='Bflrtip', buttons=c('colvis', 'copy')
-    )
+  }, 
+  extensions = c('Buttons', 'Responsive'), rownames = FALSE, options = list(pageLength = 50, dom='Bflrtip', buttons=c('colvis', 'copy')
+  )
   )
   
   output$assessmentxCell <- renderTable({
     xCelltable() %>% dplyr::count(Assessment, Criteria, .drop=FALSE)
   })
+  
+  ###########################################
+  ###### TAB 7: DOWNLOAD PAGE ###############
+  ###########################################
+  
+  deconv.data.reactive <- reactive({
+    gse93777.data = gse93777.data %>% dplyr::select(-sample_status, -sample_HAQ, -subject_sex, -sample_kowabari, -sample_pain.vas, -group, -sample_SDAI, -sample_treatment_days, sample_treatment_response)
+    gse93777.long = gse93777.data %>% tidyr::pivot_longer(cols = !c("sample_id",  "sample_id_collect", "sample_treatment_response", "subject_id", "sample_disease", "sample_treatment"), names_to = "cell_types", values_to = "deconvolution_score")
+    colnames(gse93777.long) <- c("sample_id", "gsm_id", "subject_id", "sample_disease", "sample_treatment", "sample_treatment_response", "cell_type", "deconvolution_score")
+    gse93777.long %>% dplyr::select(sample_id, gsm_id, cell_type, deconvolution_score, everything())
+  })
+  
+  
+  output$downloadCibersort <- renderDataTable({
+    deconv.data.reactive() %>% dplyr::filter(grepl("ciber", cell_type, ignore.case = T))
+  },
+  extensions = c('Buttons', 'Responsive'), rownames = FALSE, options = list(lengthMenu = list(c(10, 100, -1), c('10', '100', 'ALL')), pageLength = 100, dom='Bflrtip', buttons=c('colvis', 'copy')
+  ))
+  
+  
+  output$downloadXcell <- renderDataTable({
+    deconv.data.reactive() %>% filter(grepl("xcell", cell_type, ignore.case = T))
+  },
+  extensions = c('Buttons', 'Responsive'), rownames = FALSE, options = list(lengthMenu = list(c(10, 100, -1), c('10', '100', 'ALL')), pageLength = 100, dom='Bflrtip', buttons=c('colvis', 'copy')
+  ))
+  
   
 }
 
